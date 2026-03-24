@@ -1,3 +1,5 @@
+from rest_framework_simplejwt.tokens import RefreshToken as SimpleJWTRefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
 from django.contrib.auth import get_user_model
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
@@ -53,7 +55,8 @@ class LoginView(APIView):
 
 class LogoutView(APIView):
     def post(self, request):
-        response = Response({'message': 'Erfolgreich abgemeldet.'}, status=status.HTTP_200_OK)
+        response = Response(
+            {'message': 'Erfolgreich abgemeldet.'}, status=status.HTTP_200_OK)
         response.delete_cookie('access_token')
         response.delete_cookie('refresh_token')
         return response
@@ -103,7 +106,28 @@ def authenticate_user(email, password):
 
 def build_token_response(user):
     refresh = RefreshToken.for_user(user)
-    response = Response({'message': 'Login erfolgreich.'}, status=status.HTTP_200_OK)
-    response.set_cookie('access_token', str(refresh.access_token), httponly=True, samesite='Lax')
-    response.set_cookie('refresh_token', str(refresh), httponly=True, samesite='Lax')
+    response = Response({'message': 'Login erfolgreich.'},
+                        status=status.HTTP_200_OK)
+    response.set_cookie('access_token', str(
+        refresh.access_token), httponly=True, samesite='Lax')
+    response.set_cookie('refresh_token', str(refresh),
+                        httponly=True, samesite='Lax')
     return response
+
+
+class CookieTokenRefreshView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        refresh_token = request.COOKIES.get('refresh_token')
+        if not refresh_token:
+            return Response({'error': 'Kein Refresh Token gefunden.'}, status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            refresh = SimpleJWTRefreshToken(refresh_token)
+            response = Response(
+                {'message': 'Token erneuert.'}, status=status.HTTP_200_OK)
+            response.set_cookie('access_token', str(
+                refresh.access_token), httponly=True, samesite='Lax')
+            return response
+        except TokenError:
+            return Response({'error': 'Ungültiger Refresh Token.'}, status=status.HTTP_401_UNAUTHORIZED)
