@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     'django_rq',
     'auth_app',
+    'video_app',
     # 'content.apps.ContentConfig',
 
 ]
