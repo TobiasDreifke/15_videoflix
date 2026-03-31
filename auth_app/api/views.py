@@ -28,16 +28,19 @@ class RegisterView(APIView):
         return Response({'message': 'Registrierung erfolgreich.'}, status=status.HTTP_201_CREATED)
 
 
+from django.http import HttpResponse
+
+
 class ActivateAccountView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, uidb64, token):
         user = get_user_from_uid(uidb64)
         if not user or not default_token_generator.check_token(user, token):
-            return Response({'error': 'Ungültiger Aktivierungslink.'}, status=status.HTTP_400_BAD_REQUEST)
+            return HttpResponse('<h1>Ungültiger Aktivierungslink.</h1><p>Der Link ist ungültig oder abgelaufen.</p>', status=400)
         user.is_active = True
         user.save()
-        return Response({'message': 'Account aktiviert.'}, status=status.HTTP_200_OK)
+        return HttpResponse('<h1>Account aktiviert!</h1><p>Sie können sich jetzt anmelden.</p>', status=200)
 
 
 class LoginView(APIView):

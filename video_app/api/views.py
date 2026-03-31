@@ -25,25 +25,6 @@ class VideoDetailView(APIView):
         serializer = VideoSerializer(video, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
-class GenreListView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        genres = Genre.objects.all()
-        serializer = GenreSerializer(genres, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class VideoByGenreView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, genre_id):
-        videos = Video.objects.filter(genre__id=genre_id)
-        serializer = VideoSerializer(videos, many=True, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
 def get_video_or_none(pk):
     try:
         return Video.objects.get(pk=pk)

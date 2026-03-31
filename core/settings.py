@@ -204,3 +204,4 @@ EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'False') == 'True'
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@videoflix.de')
 
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:4200')
+BACKEND_URL = os.getenv('BACKEND_URL', 'http://localhost:8000')

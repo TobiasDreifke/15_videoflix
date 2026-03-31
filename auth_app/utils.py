@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 def send_activation_email(user, request):
     token = default_token_generator.make_token(user)
     uid = urlsafe_base64_encode(force_bytes(user.pk))
-    frontend_url = settings.FRONTEND_URL
-    activation_link = f"{frontend_url}/activate/{uid}/{token}/"
+    backend_url = settings.BACKEND_URL
+    activation_link = f"{backend_url}/api/activate/{uid}/{token}/"
     try:
         send_mail(
             subject='Videoflix - Account aktivieren',
@@ -29,8 +29,8 @@ def send_activation_email(user, request):
 def send_password_reset_email(user, request):
     token = default_token_generator.make_token(user)
     uid = urlsafe_base64_encode(force_bytes(user.pk))
-    frontend_url = settings.FRONTEND_URL
-    reset_link = f"{frontend_url}/reset-password/{uid}/{token}/"
+    backend_url = settings.BACKEND_URL
+    reset_link = f"{backend_url}/reset-password/{uid}/{token}/"
     try:
         send_mail(
             subject='Videoflix - Passwort zuruecksetzen',
