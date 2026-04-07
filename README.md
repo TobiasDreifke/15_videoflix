@@ -20,7 +20,7 @@ Dies ist ein Django-Backend für das Videoflix-Projekt. Die Anwendung nutzt Post
 1. Repository klonen:
 
 ```bash
-git clone https://github.com/<dein-repo>/15_videoflix.git
+git clone https://github.com/TobiasDreifke/15_videoflix.git
 cd 15_videoflix
 ```
 
