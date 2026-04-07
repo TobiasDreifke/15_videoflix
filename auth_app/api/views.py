@@ -17,6 +17,7 @@ GENERIC_ERROR = 'Bitte überprüfe deine Eingaben und versuche es erneut.'
 
 
 class RegisterView(APIView):
+    authentication_classes = []
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -32,6 +33,7 @@ from django.http import HttpResponse
 
 
 class ActivateAccountView(APIView):
+    authentication_classes = []
     permission_classes = [AllowAny]
 
     def get(self, request, uidb64, token):
@@ -44,6 +46,7 @@ class ActivateAccountView(APIView):
 
 
 class LoginView(APIView):
+    authentication_classes = []
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -57,6 +60,8 @@ class LoginView(APIView):
 
 
 class LogoutView(APIView):
+    authentication_classes = []
+
     def post(self, request):
         response = Response(
             {'message': 'Erfolgreich abgemeldet.'}, status=status.HTTP_200_OK)
@@ -66,6 +71,7 @@ class LogoutView(APIView):
 
 
 class PasswordResetRequestView(APIView):
+    authentication_classes = []
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -78,6 +84,7 @@ class PasswordResetRequestView(APIView):
 
 
 class PasswordResetConfirmView(APIView):
+    authentication_classes = []
     permission_classes = [AllowAny]
 
     def post(self, request, uidb64, token):
@@ -119,6 +126,7 @@ def build_token_response(user):
 
 
 class CookieTokenRefreshView(APIView):
+    authentication_classes = []
     permission_classes = [AllowAny]
 
     def post(self, request):
