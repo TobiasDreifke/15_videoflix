@@ -94,26 +94,15 @@ pip install -r requirements.txt
 
 - Kopiere die vorhandene `.env`-Datei oder erstelle sie neu.
 - Setze die korrekten Datenbank- und Django-Werte.
+- Setze Debug = False damit der Mailserver funktioniert
 
-4. Migrationen ausführen:
-
-```powershell
-python manage.py migrate
-```
-
-5. Superuser erstellen:
-
-```powershell
-python manage.py createsuperuser
-```
-
-6. Backend starten:
+4. Backend starten:
 
 ```powershell
 python manage.py runserver
 ```
 
-7. Backend aufrufen:
+5. Backend aufrufen:
 
 - `http://127.0.0.1:8000`
 
