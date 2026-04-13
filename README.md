@@ -20,11 +20,11 @@ Dies ist ein Django-Backend für das Videoflix-Projekt. Die Anwendung nutzt Post
 1. Repository klonen:
 
 ```bash
-git clone https://github.com/<dein-repo>/15_videoflix.git
+git clone https://github.com/TobiasDreifke/15_videoflix.git
 cd 15_videoflix
 ```
 
-2. `.env` aus der Vorlage erstellen:
+2. `.env` aus der Vorlage erstellen und backend.entrypoint.sh auf LF stellen:
 
 - Kopiere die Datei `.env.template` nach `.env` im Projektstamm:
 
@@ -49,6 +49,8 @@ copy .env.template .env
   - `BACKEND_URL`
 
 > Achtung: Die `.env`-Datei enthält sensible Daten. Nicht in ein öffentliches Repository einchecken.
+
+BACKEND.ENTRYPOINT.SH im VS Code als LS speichern
 
 3. Docker-Container bauen und starten:
 
