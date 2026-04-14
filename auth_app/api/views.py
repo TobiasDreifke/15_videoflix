@@ -94,8 +94,10 @@ class PasswordResetRequestView(APIView):
 
     def post(self, request):
         """Send a password reset email when the address exists."""
-        email = request.data.get('email')
-        user = User.objects.filter(email=email).first()
+        email = normalize_email(request.data.get('email'))
+        if not email:
+            return Response({'error': 'E-Mail ist erforderlich.'}, status=status.HTTP_400_BAD_REQUEST)
+        user = User.objects.filter(email__iexact=email).first()
         if user:
             from ..utils import send_password_reset_email
             send_password_reset_email(user, request)
@@ -146,10 +148,19 @@ def activate_account(uidb64, token):
 def authenticate_user(email, password):
     """Return the active user for the provided credentials."""
 
-    user = User.objects.filter(email=email).first()
+    email = normalize_email(email)
+    user = User.objects.filter(email__iexact=email).first()
     if not user or not user.check_password(password) or not user.is_active:
         return None
     return user
+
+
+def normalize_email(email):
+    """Normalize email input for case-insensitive lookups."""
+
+    if not email:
+        return ''
+    return email.strip().lower()
 
 
 def build_token_response(user):
