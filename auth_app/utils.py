@@ -1,6 +1,8 @@
 """Utility helpers for authentication emails."""
 
 import logging
+from email.mime.image import MIMEImage
+from pathlib import Path
 from urllib.parse import urlencode
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
@@ -10,6 +12,8 @@ from django.utils.encoding import force_bytes
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
+LOGO_CID = 'videoflix-logo'
+LOGO_PATH = Path(__file__).resolve().parent / 'static' / 'auth_app' / 'logo.png'
 
 
 def send_templated_email(template_prefix, recipient, context):
@@ -26,14 +30,24 @@ def send_templated_email(template_prefix, recipient, context):
         to=[recipient],
     )
     email.attach_alternative(html_body, 'text/html')
+    attach_inline_logo(email)
     email.send()
 
 
-def build_logo_url():
-    """Return the absolute URL to the branded email logo asset."""
+def attach_inline_logo(email):
+    """Attach the email logo as an inline image for mail client compatibility."""
 
-    backend_url = settings.BACKEND_URL.rstrip('/')
-    return f'{backend_url}/static/auth_app/logo.png'
+    with LOGO_PATH.open('rb') as logo_file:
+        logo = MIMEImage(logo_file.read())
+    logo.add_header('Content-ID', f'<{LOGO_CID}>')
+    logo.add_header('Content-Disposition', 'inline', filename='logo.png')
+    email.attach(logo)
+
+
+def get_email_greeting_name(user):
+    """Return a friendly greeting name without falling back to an email address."""
+
+    return user.get_full_name() or user.username or 'there'
 
 
 def send_activation_email(user, request):
@@ -51,9 +65,9 @@ def send_activation_email(user, request):
         'cta_label': 'Activate Account',
         'cta_url': activation_link,
         'support_email': settings.DEFAULT_FROM_EMAIL,
-        'user_name': user.get_full_name() or user.username or user.email,
+        'user_name': get_email_greeting_name(user),
         'videoflix_url': frontend_url,
-        'logo_url': build_logo_url(),
+        'logo_url': f'cid:{LOGO_CID}',
     }
     try:
         send_templated_email('activation', user.email, context)
@@ -78,9 +92,9 @@ def send_password_reset_email(user, request):
         'cta_label': 'Reset Password',
         'cta_url': reset_link,
         'support_email': settings.DEFAULT_FROM_EMAIL,
-        'user_name': user.get_full_name() or user.username or user.email,
+        'user_name': get_email_greeting_name(user),
         'videoflix_url': frontend_url,
-        'logo_url': build_logo_url(),
+        'logo_url': f'cid:{LOGO_CID}',
     }
     try:
         send_templated_email('password_reset', user.email, context)
