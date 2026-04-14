@@ -58,19 +58,7 @@ BACKEND.ENTRYPOINT.SH im VS Code als LS speichern
 docker-compose up --build -d
 ```
 
-4. Datenbank-Migrationen durchführen:
-
-```powershell
-docker-compose exec web python manage.py migrate
-```
-
-5. Optional: Superuser anlegen (falls noch nicht automatisch vorhanden):
-
-```powershell
-docker-compose exec web python manage.py createsuperuser
-```
-
-6. Backend aufrufen:
+4. Backend aufrufen:
 
 - `http://127.0.0.1:8000`
 
