@@ -13,5 +13,5 @@ class CustomUser(AbstractUser):
     REQUIRED_FIELDS = ['username']
 
     def __str__(self):
-        """Return the user's email address for display contexts."""
+        """Return the user's email address for display purposes."""
         return self.email

@@ -6,14 +6,15 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from ..models import Video, Genre
-from .serializers import VideoSerializer, GenreSerializer
+from ..models import Video
+from .serializers import VideoSerializer
 
 
 class VideoListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        """Return all videos available to the authenticated user."""
         videos = Video.objects.all()
         serializer = VideoSerializer(videos, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -23,6 +24,7 @@ class VideoDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk):
+        """Return a single video by primary key."""
         video = get_video_or_none(pk)
         if not video:
             return Response({'error': 'Video nicht gefunden.'}, status=status.HTTP_404_NOT_FOUND)
@@ -30,6 +32,7 @@ class VideoDetailView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, pk):
+        """Delete a single video by primary key."""
         video = get_video_or_none(pk)
         if not video:
             return Response({'error': 'Video nicht gefunden.'}, status=status.HTTP_404_NOT_FOUND)
@@ -41,6 +44,7 @@ class ThumbnailDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk):
+        """Stream the thumbnail image file for a video."""
         video = get_video_or_none(pk)
         if not video or not video.thumbnail:
             raise Http404('Thumbnail nicht gefunden.')
@@ -52,6 +56,7 @@ class ThumbnailDetailView(APIView):
         )
 
     def delete(self, request, pk):
+        """Delete the thumbnail image assigned to a video."""
         video = get_video_or_none(pk)
         if not video or not video.thumbnail:
             return Response({'error': 'Thumbnail nicht gefunden.'}, status=status.HTTP_404_NOT_FOUND)
@@ -66,6 +71,7 @@ class HLSManifestView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, movie_id, resolution):
+        """Serve the HLS manifest file for a video resolution."""
         manifest_path = build_hls_path(movie_id, resolution, 'index.m3u8')
         if not os.path.exists(manifest_path):
             raise Http404('Manifest nicht gefunden.')
@@ -76,6 +82,7 @@ class HLSSegmentView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, movie_id, resolution, segment):
+        """Serve a single HLS transport stream segment."""
         segment_path = build_hls_path(movie_id, resolution, segment)
         if not os.path.exists(segment_path):
             raise Http404('Segment nicht gefunden.')
@@ -83,6 +90,7 @@ class HLSSegmentView(APIView):
 
 
 def get_video_or_none(pk):
+    """Return a video by primary key or ``None`` if it does not exist."""
     try:
         return Video.objects.get(pk=pk)
     except Video.DoesNotExist:
@@ -90,4 +98,5 @@ def get_video_or_none(pk):
 
 
 def build_hls_path(movie_id, resolution, filename):
+    """Build the absolute filesystem path for an HLS asset."""
     return os.path.join(settings.MEDIA_ROOT, 'videos', 'hls', str(movie_id), resolution, filename)

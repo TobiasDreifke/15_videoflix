@@ -1,3 +1,1 @@
-from django.shortcuts import render
-
-# Create your views here.
+"""Non-API views for the video app."""

@@ -11,6 +11,7 @@ from .models import Video
 
 @receiver(pre_save, sender=Video)
 def cleanup_replaced_thumbnail(sender, instance, **kwargs):
+    """Delete the previous thumbnail file when a video thumbnail is replaced."""
     if not instance.pk:
         return
 
@@ -25,6 +26,7 @@ def cleanup_replaced_thumbnail(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Video)
 def trigger_hls_conversion(sender, instance, created, **kwargs):
+    """Queue HLS conversion when a new video file is created."""
     if created and instance.video_file:
         queue = django_rq.get_queue('default')
         queue.enqueue('video_app.utils.convert_to_hls', instance.pk)
@@ -32,6 +34,7 @@ def trigger_hls_conversion(sender, instance, created, **kwargs):
 
 @receiver(post_delete, sender=Video)
 def cleanup_video_files(sender, instance, **kwargs):
+    """Remove stored media files and generated HLS assets after deletion."""
     if instance.video_file:
         instance.video_file.delete(save=False)
 

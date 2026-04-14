@@ -9,6 +9,7 @@ class Genre(models.Model):
         verbose_name_plural = 'Genres'
 
     def __str__(self):
+        """Return the genre name for admin and display contexts."""
         return self.name
 
 
@@ -24,4 +25,5 @@ class Video(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
+        """Return the video title for admin and display contexts."""
         return self.title

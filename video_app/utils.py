@@ -4,6 +4,7 @@ from django.conf import settings
 
 
 def convert_to_hls(video_id):
+    """Convert the stored video into multiple HLS renditions."""
     from .models import Video
     video = Video.objects.get(pk=video_id)
     input_path = os.path.join(settings.MEDIA_ROOT, str(video.video_file))
@@ -19,6 +20,7 @@ def convert_to_hls(video_id):
 
 
 def convert_resolution(input_path, output_base, name, size, bitrate):
+    """Generate a single HLS rendition for the requested resolution."""
     output_dir = os.path.join(output_base, name)
     os.makedirs(output_dir, exist_ok=True)
     output_m3u8 = os.path.join(output_dir, 'index.m3u8')

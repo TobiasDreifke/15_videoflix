@@ -6,4 +6,5 @@ class VideoAppConfig(AppConfig):
     name = 'video_app'
 
     def ready(self):
+        """Import signal handlers when the application is ready."""
         import video_app.signals
