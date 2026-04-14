@@ -1,14 +1,15 @@
-from rest_framework_simplejwt.tokens import RefreshToken as SimpleJWTRefreshToken
-from rest_framework_simplejwt.exceptions import TokenError
 from django.contrib.auth import get_user_model
-from django.utils.http import urlsafe_base64_decode
-from django.utils.encoding import force_str
 from django.contrib.auth.tokens import default_token_generator
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
 from rest_framework import status
 from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken as SimpleJWTRefreshToken
+
 from .serializers import RegisterSerializer
 from ..utils import send_activation_email
 
@@ -34,21 +35,15 @@ class ActivateAccountView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
+    def get(self, request, uidb64, token):
+        return activate_account(uidb64, token)
+
     def post(self, request):
         uidb64 = request.data.get('uid')
         token = request.data.get('token')
         if not uidb64 or not token:
-            return Response({'error': 'UngÃ¼ltige Aktivierungsdaten.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        user = get_user_from_uid(uidb64)
-
-        if not user or not default_token_generator.check_token(user, token):
-            return Response({'error': 'UngÃ¼ltiger Link.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        user.is_active = True
-        user.save(update_fields=['is_active'])
-
-        return Response({'message': 'Account erfolgreich aktiviert.'}, status=status.HTTP_200_OK)
+            return Response({'error': 'Ungültige Aktivierungsdaten.'}, status=status.HTTP_400_BAD_REQUEST)
+        return activate_account(uidb64, token)
 
 
 class LoginView(APIView):
@@ -111,6 +106,16 @@ def get_user_from_uid(uidb64):
         return User.objects.get(pk=uid)
     except (User.DoesNotExist, ValueError):
         return None
+
+
+def activate_account(uidb64, token):
+    user = get_user_from_uid(uidb64)
+    if not user or not default_token_generator.check_token(user, token):
+        return Response({'error': 'Ungültiger Link.'}, status=status.HTTP_400_BAD_REQUEST)
+    if not user.is_active:
+        user.is_active = True
+        user.save(update_fields=['is_active'])
+    return Response({'message': 'Account erfolgreich aktiviert.'}, status=status.HTTP_200_OK)
 
 
 def authenticate_user(email, password):
