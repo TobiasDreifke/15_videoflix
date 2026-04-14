@@ -28,6 +28,13 @@ class VideoDetailView(APIView):
         serializer = VideoSerializer(video, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def delete(self, request, pk):
+        video = get_video_or_none(pk)
+        if not video:
+            return Response({'error': 'Video nicht gefunden.'}, status=status.HTTP_404_NOT_FOUND)
+        video.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class HLSManifestView(APIView):
     permission_classes = [IsAuthenticated]
