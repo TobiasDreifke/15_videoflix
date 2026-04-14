@@ -1,3 +1,5 @@
+"""Utility helpers for authentication emails."""
+
 import logging
 from urllib.parse import urlencode
 from django.core.mail import send_mail
@@ -10,6 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 def send_activation_email(user, request):
+    """Send the account activation email for a newly registered user."""
+
     token = default_token_generator.make_token(user)
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     query = urlencode({'uid': uid, 'token': token})
@@ -29,6 +33,8 @@ def send_activation_email(user, request):
 
 
 def send_password_reset_email(user, request):
+    """Send the password reset email for the supplied user."""
+
     token = default_token_generator.make_token(user)
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     backend_url = settings.BACKEND_URL
