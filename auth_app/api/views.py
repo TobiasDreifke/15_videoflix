@@ -68,8 +68,7 @@ class LoginView(APIView):
         user = authenticate_user(email, password)
         if not user:
             return Response({'error': GENERIC_ERROR}, status=status.HTTP_401_UNAUTHORIZED)
-        response = build_token_response(user)
-        return response
+        return build_token_response(user)
 
 
 class LogoutView(APIView):
@@ -79,8 +78,7 @@ class LogoutView(APIView):
 
     def post(self, request):
         """Delete auth cookies and confirm the logout."""
-        response = Response(
-            {'message': 'Erfolgreich abgemeldet.'}, status=status.HTTP_200_OK)
+        response = Response({'message': 'Erfolgreich abgemeldet.'}, status=status.HTTP_200_OK)
         response.delete_cookie('access_token')
         response.delete_cookie('refresh_token')
         return response
@@ -115,11 +113,18 @@ class PasswordResetConfirmView(APIView):
         user = get_user_from_uid(uidb64)
         if not user or not default_token_generator.check_token(user, token):
             return Response({'error': 'Ungültiger Link.'}, status=status.HTTP_400_BAD_REQUEST)
-        new_password = request.data.get('password')
+
+        new_password = request.data.get('new_password') or request.data.get('password')
+        confirm_password = request.data.get('confirm_password')
+
+        if confirm_password is not None and new_password != confirm_password:
+            return Response({'error': 'Die Passwörter stimmen nicht überein.'}, status=status.HTTP_400_BAD_REQUEST)
+
         if not new_password or len(new_password) < 8:
             return Response({'error': GENERIC_ERROR}, status=status.HTTP_400_BAD_REQUEST)
+
         user.set_password(new_password)
-        user.save()
+        user.save(update_fields=['password'])
         return Response({'message': 'Passwort erfolgreich geändert.'})
 
 
@@ -167,12 +172,9 @@ def build_token_response(user):
     """Build a login response that stores JWT tokens in cookies."""
 
     refresh = RefreshToken.for_user(user)
-    response = Response({'message': 'Login erfolgreich.'},
-                        status=status.HTTP_200_OK)
-    response.set_cookie('access_token', str(
-        refresh.access_token), httponly=True, samesite='Lax')
-    response.set_cookie('refresh_token', str(refresh),
-                        httponly=True, samesite='Lax')
+    response = Response({'message': 'Login erfolgreich.'}, status=status.HTTP_200_OK)
+    response.set_cookie('access_token', str(refresh.access_token), httponly=True, samesite='Lax')
+    response.set_cookie('refresh_token', str(refresh), httponly=True, samesite='Lax')
     return response
 
 
@@ -189,10 +191,8 @@ class CookieTokenRefreshView(APIView):
             return Response({'error': 'Kein Refresh Token gefunden.'}, status=status.HTTP_401_UNAUTHORIZED)
         try:
             refresh = SimpleJWTRefreshToken(refresh_token)
-            response = Response(
-                {'message': 'Token erneuert.'}, status=status.HTTP_200_OK)
-            response.set_cookie('access_token', str(
-                refresh.access_token), httponly=True, samesite='Lax')
+            response = Response({'message': 'Token erneuert.'}, status=status.HTTP_200_OK)
+            response.set_cookie('access_token', str(refresh.access_token), httponly=True, samesite='Lax')
             return response
         except TokenError:
             return Response({'error': 'Ungültiger Refresh Token.'}, status=status.HTTP_401_UNAUTHORIZED)
