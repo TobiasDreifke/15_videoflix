@@ -39,7 +39,7 @@ def send_password_reset_email(user, request):
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     query = urlencode({'uid': uid, 'token': token})
     frontend_url = settings.FRONTEND_URL.rstrip('/')
-    reset_link = f"{frontend_url}/pages/auth/reset-password.html?{query}"
+    reset_link = f"{frontend_url}/pages/auth/confirm_password.html?{query}"
     try:
         send_mail(
             subject='Videoflix - Passwort zuruecksetzen',
