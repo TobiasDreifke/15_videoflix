@@ -3,10 +3,24 @@ import shutil
 
 import django_rq
 from django.conf import settings
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 
 from .models import Video
+
+
+@receiver(pre_save, sender=Video)
+def cleanup_replaced_thumbnail(sender, instance, **kwargs):
+    if not instance.pk:
+        return
+
+    try:
+        previous = Video.objects.only('thumbnail').get(pk=instance.pk)
+    except Video.DoesNotExist:
+        return
+
+    if previous.thumbnail and previous.thumbnail.name != getattr(instance.thumbnail, 'name', None):
+        previous.thumbnail.delete(save=False)
 
 
 @receiver(post_save, sender=Video)
