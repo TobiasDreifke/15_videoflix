@@ -1,4 +1,3 @@
-from django.http import HttpResponse
 from rest_framework_simplejwt.tokens import RefreshToken as SimpleJWTRefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from django.contrib.auth import get_user_model
@@ -12,9 +11,6 @@ from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import RegisterSerializer
 from ..utils import send_activation_email
-from urllib.parse import urlencode
-from django.conf import settings
-from django.http import HttpResponseRedirect
 
 
 User = get_user_model()
@@ -38,20 +34,21 @@ class ActivateAccountView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    def get(self, request, uidb64, token):
+    def post(self, request):
+        uidb64 = request.data.get('uid')
+        token = request.data.get('token')
+        if not uidb64 or not token:
+            return Response({'error': 'UngÃ¼ltige Aktivierungsdaten.'}, status=status.HTTP_400_BAD_REQUEST)
+
         user = get_user_from_uid(uidb64)
 
         if not user or not default_token_generator.check_token(user, token):
-            return HttpResponseRedirect(
-                build_frontend_redirect_url('error', 'invalid-link')
-            )
+            return Response({'error': 'UngÃ¼ltiger Link.'}, status=status.HTTP_400_BAD_REQUEST)
 
         user.is_active = True
         user.save(update_fields=['is_active'])
 
-        return HttpResponseRedirect(
-            build_frontend_redirect_url('success', 'account-activated')
-        )
+        return Response({'message': 'Account erfolgreich aktiviert.'}, status=status.HTTP_200_OK)
 
 
 class LoginView(APIView):
@@ -114,14 +111,6 @@ def get_user_from_uid(uidb64):
         return User.objects.get(pk=uid)
     except (User.DoesNotExist, ValueError):
         return None
-
-
-def build_frontend_redirect_url(activation, status_name):
-    query = urlencode({
-        'activation': activation,
-        'status': status_name,
-    })
-    return f'{settings.FRONTEND_URL}?{query}'
 
 
 def authenticate_user(email, password):

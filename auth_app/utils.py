@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import urlencode
 from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
@@ -11,8 +12,9 @@ logger = logging.getLogger(__name__)
 def send_activation_email(user, request):
     token = default_token_generator.make_token(user)
     uid = urlsafe_base64_encode(force_bytes(user.pk))
-    backend_url = settings.BACKEND_URL
-    activation_link = f"{backend_url}/api/activate/{uid}/{token}/"
+    query = urlencode({'uid': uid, 'token': token})
+    frontend_url = settings.FRONTEND_URL.rstrip('/')
+    activation_link = f"{frontend_url}/pages/auth/activate.html?{query}"
     try:
         send_mail(
             subject='Videoflix - Account aktivieren',
