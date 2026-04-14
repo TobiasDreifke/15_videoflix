@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ headline }}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4efe8;font-family:Arial,sans-serif;color:#1f1f1f;">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;">
+        {{ preheader }}
+    </div>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:linear-gradient(180deg,#f4efe8 0%,#fffaf5 100%);padding:32px 16px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background-color:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 16px 50px rgba(42,27,12,0.12);">
+                    <tr>
+                        <td align="center" style="padding:32px 40px 24px;background-color:#ffffff;color:#0f172a;border-bottom:1px solid #e2e8f0;">
+                            <a href="{{ videoflix_url }}" style="display:inline-block;text-decoration:none;">
+                                <img src="{{ logo_url }}" alt="Videoflix" width="251" style="display:block;width:251px;max-width:100%;height:auto;border:0;">
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:40px;">
+                            {% block content %}{% endblock %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:24px 40px;background-color:#f8fafc;color:#475569;font-size:14px;line-height:1.6;border-top:1px solid #e2e8f0;">
+                            <a href="{{ videoflix_url }}" style="color:#1d4ed8;text-decoration:none;">Videoflix</a>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

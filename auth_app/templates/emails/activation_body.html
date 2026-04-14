@@ -1,0 +1,24 @@
+{% extends "emails/base.html" %}
+
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.7;">Dear {{ user_name }},</p>
+<p style="margin:0 0 16px;font-size:16px;line-height:1.7;">
+    Thank you for registering with <a href="{{ videoflix_url }}" style="color:#1d4ed8;text-decoration:none;">Videoflix</a>.
+</p>
+<p style="margin:0 0 16px;font-size:16px;line-height:1.7;">
+    To complete your registration and verify your email address, please use the link below:
+</p>
+<p style="margin:0 0 32px;text-align:center;">
+    <a href="{{ cta_url }}" style="display:inline-block;padding:14px 24px;border-radius:999px;background-color:#1d4ed8;color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;">
+        {{ cta_label }}
+    </a>
+</p>
+<p style="margin:0 0 24px;font-size:16px;line-height:1.7;">
+    If you did not create an account, you can safely ignore this email.
+</p>
+<p style="margin:0 0 8px;font-size:16px;line-height:1.7;">Best regards,</p>
+<p style="margin:0;font-size:16px;line-height:1.7;">Your Videoflix Team</p>
+<p style="margin:24px 0 0;font-size:14px;line-height:1.7;word-break:break-all;color:#475569;">
+    <a href="{{ cta_url }}" style="color:#1d4ed8;text-decoration:none;">{{ cta_url }}</a>
+</p>
+{% endblock %}
