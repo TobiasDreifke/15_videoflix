@@ -1,3 +1,4 @@
+import mimetypes
 import os
 from django.http import FileResponse, Http404
 from django.conf import settings
@@ -33,6 +34,31 @@ class VideoDetailView(APIView):
         if not video:
             return Response({'error': 'Video nicht gefunden.'}, status=status.HTTP_404_NOT_FOUND)
         video.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ThumbnailDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        video = get_video_or_none(pk)
+        if not video or not video.thumbnail:
+            raise Http404('Thumbnail nicht gefunden.')
+
+        content_type, _ = mimetypes.guess_type(video.thumbnail.path)
+        return FileResponse(
+            open(video.thumbnail.path, 'rb'),
+            content_type=content_type or 'application/octet-stream',
+        )
+
+    def delete(self, request, pk):
+        video = get_video_or_none(pk)
+        if not video or not video.thumbnail:
+            return Response({'error': 'Thumbnail nicht gefunden.'}, status=status.HTTP_404_NOT_FOUND)
+
+        video.thumbnail.delete(save=False)
+        video.thumbnail = None
+        video.save(update_fields=['thumbnail'])
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
