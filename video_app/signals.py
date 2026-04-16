@@ -28,7 +28,7 @@ def cleanup_replaced_thumbnail(sender, instance, **kwargs):
 def trigger_hls_conversion(sender, instance, created, **kwargs):
     """Queue HLS conversion when a new video file is created."""
     if created and instance.video_file:
-        queue = django_rq.get_queue('default')
+        queue = django_rq.get_queue('low')
         queue.enqueue('video_app.utils.convert_to_hls', instance.pk)
 
 

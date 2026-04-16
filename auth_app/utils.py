@@ -4,16 +4,20 @@ import logging
 from email.mime.image import MIMEImage
 from pathlib import Path
 from urllib.parse import urlencode
+
+import django_rq
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
-from django.conf import settings
+from django.utils.http import urlsafe_base64_encode
 
 logger = logging.getLogger(__name__)
 LOGO_CID = 'videoflix-logo'
 LOGO_PATH = Path(__file__).resolve().parent / 'static' / 'auth_app' / 'logo.png'
+User = get_user_model()
 
 
 def send_templated_email(template_prefix, recipient, context):
@@ -50,15 +54,15 @@ def get_email_greeting_name(user):
     return user.get_full_name() or user.username or 'there'
 
 
-def send_activation_email(user, request):
-    """Send the account activation email for a newly registered user."""
+def build_activation_email_context(user):
+    """Build the template context for account activation emails."""
 
     token = default_token_generator.make_token(user)
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     query = urlencode({'uid': uid, 'token': token})
     frontend_url = settings.FRONTEND_URL.rstrip('/')
     activation_link = f"{frontend_url}/pages/auth/activate.html?{query}"
-    context = {
+    return {
         'user': user,
         'headline': 'Activate your Videoflix account',
         'preheader': 'Confirm your email address to start using Videoflix.',
@@ -69,23 +73,17 @@ def send_activation_email(user, request):
         'videoflix_url': frontend_url,
         'logo_url': f'cid:{LOGO_CID}',
     }
-    try:
-        send_templated_email('activation', user.email, context)
-        logger.info('Activation email sent to %s', user.email)
-    except Exception:
-        logger.exception('Failed to send activation email to %s', user.email)
-        raise
 
 
-def send_password_reset_email(user, request):
-    """Send the password reset email for the supplied user."""
+def build_password_reset_email_context(user):
+    """Build the template context for password reset emails."""
 
     token = default_token_generator.make_token(user)
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     query = urlencode({'uid': uid, 'token': token})
     frontend_url = settings.FRONTEND_URL.rstrip('/')
     reset_link = f"{frontend_url}/pages/auth/confirm_password.html?{query}"
-    context = {
+    return {
         'user': user,
         'headline': 'Reset your Videoflix password',
         'preheader': 'Use the secure link below to choose a new password.',
@@ -96,9 +94,41 @@ def send_password_reset_email(user, request):
         'videoflix_url': frontend_url,
         'logo_url': f'cid:{LOGO_CID}',
     }
+
+
+def send_activation_email_job(user_id):
+    """Send the queued account activation email for the given user."""
+
+    user = User.objects.get(pk=user_id)
     try:
-        send_templated_email('password_reset', user.email, context)
+        send_templated_email('activation', user.email, build_activation_email_context(user))
+        logger.info('Activation email sent to %s', user.email)
+    except Exception:
+        logger.exception('Failed to send activation email to %s', user.email)
+        raise
+
+
+def send_activation_email(user, request=None):
+    """Queue the account activation email for a newly registered user."""
+
+    queue = django_rq.get_queue('high')
+    queue.enqueue('auth_app.utils.send_activation_email_job', user.pk)
+
+
+def send_password_reset_email_job(user_id):
+    """Send the queued password reset email for the given user."""
+
+    user = User.objects.get(pk=user_id)
+    try:
+        send_templated_email('password_reset', user.email, build_password_reset_email_context(user))
         logger.info('Password reset email sent to %s', user.email)
     except Exception:
         logger.exception('Failed to send password reset email to %s', user.email)
         raise
+
+
+def send_password_reset_email(user, request=None):
+    """Queue the password reset email for the supplied user."""
+
+    queue = django_rq.get_queue('high')
+    queue.enqueue('auth_app.utils.send_password_reset_email_job', user.pk)
